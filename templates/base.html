@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}AlgoPredict{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 min-h-screen">
+    <nav class="bg-white shadow">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <a href="{{ url_for('index') }}" class="font-bold text-lg">AlgoPredict</a>
+          <a href="{{ url_for('predict_route') if False else url_for('predict_route') }}">Predict</a>
+          <a href="{{ url_for('train_route') }}">Train</a>
+          <a href="{{ url_for('generate_dataset') }}">Generate Dataset</a>
+          <a href="{{ url_for('dataset_view') }}">Dataset</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-6">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="space-y-2 mb-4">
+            {% for cat, msg in messages %}
+              <div class="p-3 rounded {{ 'bg-red-100 text-red-800' if cat=='danger' else 'bg-green-100 text-green-800' }}">
+                {{ msg }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

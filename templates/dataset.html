@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlgoPredict - Dataset</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center py-10">
+
+    <h1 class="text-4xl font-bold mb-8 text-center">Dataset Generated</h1>
+
+    <!-- Flash Message -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed top-5 left-1/2 transform -translate-x-1/2 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-6 py-4 rounded-xl shadow-md font-medium
+                        {% if category == 'info' %}bg-blue-600{% elif category == 'success' %}bg-green-600{% elif category == 'danger' %}bg-red-600{% else %}bg-gray-700{% endif %}
+                        text-white animate-fade">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <p class="mb-6">Displaying <strong>{{ count }}</strong> Records.</p>
+
+    <div class="overflow-x-auto w-full max-w-6xl">
+            <!-- Pagination -->
+            <div class="mt-6 flex justify-center space-x-2 pagination-top mb-6">
+            {% if total_pages > 1 %}
+                <form method="get" class="inline">
+                    <input type="hidden" name="page" value="1">
+                    <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                    <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                    <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                    <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">« First</button>
+                </form>
+
+                {% if page > 1 %}
+                <form method="get" class="inline">
+                    <input type="hidden" name="page" value="{{ page - 1 }}">
+                    <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                    <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                    <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                    <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">‹ Prevoius</button>
+                </form>
+                {% endif %}
+
+                <span class="px-3 py-1 bg-gray-800 rounded">Page {{ page }} de {{ total_pages }}</span>
+
+                {% if page < total_pages %}
+                <form method="get" class="inline">
+                    <input type="hidden" name="page" value="{{ page + 1 }}">
+                    <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                    <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                    <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                    <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">Next ›</button>
+                </form>
+                {% endif %}
+
+                <form method="get" class="inline">
+                    <input type="hidden" name="page" value="{{ total_pages }}">
+                    <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                    <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                    <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                    <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">Last »</button>
+                </form>
+            {% endif %}
+        </div>
+        <table class="min-w-full table-auto bg-gray-800 rounded-xl shadow-lg">
+            <thead class="bg-gray-700 text-gray-100">
+                <tr>
+                    {% for key in rows[0].keys() if key != '_id' %}
+                        <th class="px-4 py-2 text-center relative">
+                            {{ key }}
+
+                            <!-- Dropdown Filter -->
+                            {% if key == 'algorithm' %}
+                            <form method="get" class="mt-1">
+                                <select name="algorithm" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
+                                    <option value="">All</option>
+                                    {% for val in algorithms %}
+                                        <option value="{{ val }}" {% if val == selected_algorithm %}selected{% endif %}>{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                                <input type="hidden" name="datatype" value="{{ selected_datatype }}">
+                                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                                <input type="hidden" name="type" value="{{ selected_type }}">
+                            </form>
+                            {% elif key == 'numElements' %}
+                            <form method="get" class="mt-1">
+                                <select name="numElements" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
+                                    <option value="">All</option>
+                                    {% for val in numElements_list %}
+                                        <option value="{{ val }}" {% if val|string == selected_numElements|string %}selected{% endif %}>{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                                <input type="hidden" name="datatype" value="{{ selected_datatype }}">
+                                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                                <input type="hidden" name="type" value="{{ selected_type }}">
+                            </form>
+                            
+                            {% elif key == 'dataType' %}
+                            <form method="get" class="mt-1">
+                                <select name="dataType" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
+                                  <option value="">All</option>
+                                  {% for val in dataTypes %}
+                                    <option value="{{ val }}" {% if val == selected_dataType %}selected{% endif %}>{{ val }}</option>
+                                  {% endfor %}
+                              </select>
+                              <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                              <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                              <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                              <input type="hidden" name="type" value="{{ selected_type }}">
+                            </form>
+
+                            {% elif key == 'sorted' %}
+                            <form method="get" class="mt-1">
+                                <select name="sorted" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
+                                    <option value="">All</option>
+                                    {% for val in sorteds %}
+                                        <option value="{{ val }}" {% if val|string == selected_sorted|string %}selected{% endif %}>{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                                <input type="hidden" name="datatype" value="{{ selected_datatype }}">
+                                <input type="hidden" name="type" value="{{ selected_type }}">
+                            </form>
+
+                            {% elif key == 'type' %}
+                            <form method="get" class="mt-1">
+                                <select name="type" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
+                                    <option value="">All</option>
+                                    {% for val in types %}
+                                        <option value="{{ val }}" {% if val == selected_type %}selected{% endif %}>{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                                <input type="hidden" name="datatype" value="{{ selected_datatype }}">
+                                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                            </form>
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="border-b border-gray-700 hover:bg-gray-700 transition-colors">
+                    {% for key, value in row.items() if key != '_id' %}
+                        <td class="px-4 py-2 text-center align-middle">{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Pagination -->
+    <div class="mt-6 flex justify-center space-x-2">
+        {% if total_pages > 1 %}
+            <form method="get" class="inline">
+                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                <input type="hidden" name="type" value="{{ selected_type }}">
+                <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">« First</button>
+            </form>
+
+            {% if page > 1 %}
+            <form method="get" class="inline">
+                <input type="hidden" name="page" value="{{ page - 1 }}">
+                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                <input type="hidden" name="type" value="{{ selected_type }}">
+                <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">‹ Previous</button>
+            </form>
+            {% endif %}
+
+            <span class="px-3 py-1 bg-gray-800 rounded">Page {{ page }} de {{ total_pages }}</span>
+
+            {% if page < total_pages %}
+            <form method="get" class="inline">
+                <input type="hidden" name="page" value="{{ page + 1 }}">
+                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                <input type="hidden" name="type" value="{{ selected_type }}">
+                <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">Next ›</button>
+            </form>
+            {% endif %}
+
+            <form method="get" class="inline">
+                <input type="hidden" name="page" value="{{ total_pages }}">
+                <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
+                <input type="hidden" name="numElements" value="{{ selected_numElements }}">
+                <input type="hidden" name="dataType" value="{{ selected_dataType }}">
+                <input type="hidden" name="sorted" value="{{ selected_sorted }}">
+                <input type="hidden" name="type" value="{{ selected_type }}">
+                <button type="submit" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition">Last »</button>
+            </form>
+        {% endif %}
+    </div>
+
+
+    <div class="mt-10 flex space-x-4">
+        <a href="{{ url_for('index') }}" class="px-5 py-3 rounded-full shadow-lg font-semibold text-gray-50 bg-gray-700 hover:bg-gray-600 transform transition-transform hover:scale-105">
+            ⬅ Back to Home
+        </a>
+    </div>
+
+    <style>
+      @keyframes fade {
+        0%, 100% { opacity: 0; }
+        10%, 90% { opacity: 1; }
+      }
+      .animate-fade {
+        animation: fade 4s ease-in-out forwards;
+      }
+    </style>
+</body>
+</html>
