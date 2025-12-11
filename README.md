@@ -99,7 +99,7 @@ Características:
 
 ---
 
-## Próximas Mejoras (ver ROADMAP.md)
+## Próximas Mejoras
 - Gráficos con Chart.js / Plotly  
 - Exportación CSV / XLSX / JSON  
 - Dashboard interactivo  
@@ -156,7 +156,3 @@ python app.py
 ## Autora
 Julia Gabriela Chiapello
 
-Proyecto construido junto con asistencia técnica personalizada de IA, priorizando:
-- claridad,
-- mantenibilidad,
-- experiencia de usuario
