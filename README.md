@@ -7,7 +7,6 @@ Desarrollado con **Python, Flask y MongoDB**, con un enfoque en **ingeniería de
 
 ---
 
-
 ## Motivación del proyecto
 
 En la práctica profesional, la complejidad algorítmica rara vez se comporta exactamente como la teoría indica.  
@@ -32,7 +31,6 @@ Todo esto desde una **plataforma reproducible, extensible y explicable**.
 
 ---
 
-
 ## ¿Qué se quiere demostrar?
 
 Este proyecto busca demostrar que:
@@ -50,12 +48,10 @@ Además, el proyecto refleja **criterio técnico** al elegir **diferentes enfoqu
 
 El sistema trabaja con **dos tipos de datos claramente diferenciados**:
 
-
 ### 🔹 1. Tiempos reales
 - Medidos empíricamente ejecutando algoritmos reales
 - Incluyen ruido, variabilidad y efectos del entorno
 - Se utilizan **modelos no lineales** para capturar su comportamiento
-
 
 ### 🔹 2. Tiempos teóricos
 - Generados a partir de la complejidad algorítmica esperada  
@@ -69,7 +65,6 @@ Esta separación no es casual:
 ---
 
 ## Modelado y Machine Learning
-
 
 ### Predicción de tiempos reales
 Se utiliza:
@@ -87,7 +82,6 @@ Se utiliza:
 Este modelo se utiliza **únicamente donde la teoría no alcanza**.
 
 ---
-
 
 ### Predicción de tiempos teóricos
 Se utiliza:
@@ -115,8 +109,8 @@ El dataset se construye de forma **determinística y reproducible**:
 - Diferentes tipos de datos
 - Estados ordenados y desordenados
 
-
 ### Características del benchmark:
+
 - Medición con `perf_counter`
 - Uso de la **mediana** para reducir ruido
 - Paralelización con `multiprocessing`
@@ -126,9 +120,7 @@ El dataset completo se almacena en **MongoDB** y puede ser regenerado en cualqui
 
 ---
 
-
 ## Funcionalidades principales
-
 
 ### 🔹 Predicción interactiva
 
@@ -147,7 +139,6 @@ según el rango de entrada.
 
 ---
 
-
 ### 🔹 Exploración del dataset
 - Filtros dinámicos por columna
 - Paginación completa
@@ -156,7 +147,6 @@ según el rango de entrada.
 - Preparado para análisis exploratorio
 
 ---
-
 
 ### 🔹 Procesos en background
 - Generación de dataset
@@ -168,7 +158,6 @@ según el rango de entrada.
 
 ## Tecnologías utilizadas
 
-
 ### Backend
 - Python 3.11+
 - Flask
@@ -176,12 +165,10 @@ según el rango de entrada.
 - PyMongo
 - Jinja2
 
-
 ### Ciencia de datos / ML
 - NumPy
 - Pandas
 - Scikit-learn
-
 
 ### Frontend
 - HTML
@@ -269,7 +256,6 @@ AlgoPredict/
 
 ---
 
-
 ## Cómo ejecutar
 
 ### 1. Clonar el repo:
@@ -296,7 +282,6 @@ pip install -r requirements.txt
 ```bash
 python app.py
 ```
-
 
 ### Próximas mejoras
 
