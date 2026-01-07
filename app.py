@@ -1,64 +1,160 @@
+"""
+Aplicación Flask principal del proyecto.
+
+Responsabilidades:
+- Exponer una interfaz web para:
+  - Predicción de tiempos de ejecución de algoritmos
+  - Entrenamiento del modelo
+  - Generación del dataset
+  - Visualización del dataset almacenado
+- Coordinar la interacción entre:
+  - Frontend (Jinja2)
+  - Base de datos MongoDB
+  - Modelos entrenados (archivo .pkl)
+"""
+
 import os
 import pickle
 import threading
 import time
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Flask, 
+    render_template, 
+    request, 
+    redirect, 
+    url_for, 
+    flash, 
+    jsonify
+)    
 from dotenv import load_dotenv
 from pymongo import MongoClient
+import numpy as np
+import pandas as pd
 
-# Load .env file
+# ==========================================================
+# CARGA DE VARIABLES DE ENTORNO
+# ==========================================================
+# Permite leer variables desde un archivo .env
+# (ej: MONGO_URI, DATABASE_NAME, FLASK_SECRET)
+
 load_dotenv()
 
-# Project absolute path
+# ==========================================================
+# CONFIGURACIÓN GENERAL DEL PROYECTO
+# ==========================================================
+
+# Ruta absoluta del directorio del proyecto
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Config
+# Configuracion de Mongo
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "AlgorithmsDB")
+
+# Ruta del modelo entrenado
 MODEL_PKL_PATH = os.path.join(BASE_DIR, "dualModelTrain.pkl")
 
-# Initialize Flask
-app = Flask(__name__, template_folder="templates", static_folder="static")
+# ==========================================================
+# INICIALIZACIÓN DE FLASK
+# ==========================================================
+
+app = Flask(__name__, 
+            template_folder="templates", 
+            static_folder="static"
+)
+
+# Clave secreta usada por Flask para sesiones y mensajes flash
 app.secret_key = os.getenv("FLASK_SECRET", "dev-secret")
 
-# Global state to control heavy processes (Dataset Generation and Model Training/Retraining)
+# ==========================================================
+# CONTROL GLOBAL DE PROCESOS PESADOS
+# ==========================================================
+
+"""
+Esta variable se usa para evitar que el usuario:
+- Prediga
+- Navegue el dataset
+
+mientras se está:
+- Generando el dataset
+- Entrenando el modelo
+
+Evita inconsistencias y errores de concurrencia.
+"""
 PROCESS_RUNNING = False
 
-# MongoDB connection
+# ==========================================================
+# CONEXIÓN A MONGODB
+# ==========================================================
+
 def get_db_client():
+    """
+    Crea y devuelve un cliente de MongoDB.
+    """
     return MongoClient(MONGO_URI)
 
 def get_db():
+    """
+    Devuelve la base de datos configurada.
+    """
     client = get_db_client()
     return client[DATABASE_NAME]
 
-# Load model from .pkl file (if it exists)
+# ==========================================================
+# CARGA DEL MODELO ENTRENADO
+# ==========================================================
+
 def load_models():
+    """
+    Carga el archivo dualModelTrain.pkl si existe.
+
+    Retorna:
+    - Diccionario con modelos, encoder y escaladores
+    - None si el archivo no existe
+    """
     if not os.path.exists(MODEL_PKL_PATH):
         return None
     with open(MODEL_PKL_PATH, "rb") as f:
         return pickle.load(f)
 
-# ----------------------
-# Middleware to block critical routes when a process is running
-# ----------------------
+# ==========================================================
+# MIDDLEWARE DE BLOQUEO DE RUTAS CRÍTICAS
+# ==========================================================
+
 @app.before_request
 def check_process_running():
+    """
+    Middleware que se ejecuta antes de cada request.
+
+    Si hay un proceso pesado en ejecución, bloquea
+    rutas sensibles para evitar conflictos.
+    """
     global PROCESS_RUNNING
     blocked_routes = ["predict_route", "dataset_view"]
     if PROCESS_RUNNING and request.endpoint in blocked_routes:
         flash("🚧 Hay un proceso en curso (dataset o entrenamiento). Por favor espera a que termine.", "warning")
         return redirect(url_for("index"))
 
-# ----------------------
-# Jinja2 routes
-# ----------------------
+# ==========================================================
+# RUTAS PRINCIPALES (JINJA2)
+# ==========================================================
+
 @app.route("/")
 def index():
+    """
+    Página principal del sistema.
+    """
     return render_template("index.html")
+
+# ==========================================================
+# RUTA DE PREDICCIÓN
+# ==========================================================
 
 @app.route("/predict", methods=["GET", "POST"])
 def predict_route():
+    """
+    Permite realizar predicciones de tiempo de ejecución
+    usando el modelo entrenado.
+    """
     models_data = load_models()
     algorithms = [
         "IterativeQuickSort", "RecursiveQuickSort",
@@ -69,6 +165,10 @@ def predict_route():
         "RecursiveSequentialSearch"
     ]
 
+    # ======================
+    # Lectura del formulario
+    # ======================
+
     if request.method == "POST":
         algorithm = request.form.get("algorithm")
         dataType = request.form.get("dataType")
@@ -78,15 +178,24 @@ def predict_route():
         except Exception:
             flash("Cantidad de elementos inválida", "danger")
             return redirect(url_for("predict_route"))
-        prediction_type = request.form.get("prediction_type")
+        
+        # Heurística:
+        # datasets chicos → modelo real
+        # datasets grandes → modelo teórico
+        prediction_type = "real" if numElements <= 2450 else "theoretical"
         save_pred = request.form.get("save_prediction") == "on"
+
+        # ======================
+        # Validaciones
+        # ======================
 
         if models_data is None:
             flash("No hay modelo entrenado. Entrená primero desde la sección 'Entrenar'.", "danger")
             return redirect(url_for("predict_route"))
 
-        import numpy as np
-        import pandas as pd
+        # ======================
+        # Extracción de modelos
+        # ======================
 
         encoder = models_data["encoder"]
         scaler_X = models_data["scaler_X"]
@@ -95,6 +204,10 @@ def predict_route():
         model_theoretical = models_data["model_theoretical"]
         cat_columns = models_data.get("cat_columns", ["algorithm","dataType","sorted"])
         num_columns = models_data.get("num_columns", ["numElements"])
+
+        # ======================
+        # Preparación del input
+        # ======================
 
         input_df = pd.DataFrame([{
             "algorithm": algorithm,
@@ -107,15 +220,26 @@ def predict_route():
         X_num = input_df[num_columns].values
         X_input = np.hstack((X_cat, X_num))
 
+        # ======================
+        # Predicción
+        # ======================
+
         if prediction_type == "real":
+            # El modelo real fue entrenado en escala log
             y_log_pred = model_real.predict(X_input)
             y_pred = float(np.expm1(y_log_pred)[0])
         else:
+            # El modelo teórico trabaja con variables escaladas
             X_scaled = scaler_X.transform(X_input)
             y_scaled = model_theoretical.predict(X_scaled)
             y_pred = float(scaler_y.inverse_transform(y_scaled.reshape(-1,1)).ravel()[0])
 
+        # Evitar valores negativos
         y_pred_value = max(y_pred, 0.0)
+
+        # ======================
+        # Guardado opcional
+        # ======================
 
         if save_pred:
             db = get_db()
@@ -133,8 +257,16 @@ def predict_route():
 
     return render_template("predict.html", algorithms=algorithms, result=None)
 
+# ==========================================================
+# RUTA DE ENTRENAMIENTO
+# ==========================================================
+
 @app.route("/train", methods=["GET", "POST"])
 def train_route():
+    """
+    Lanza el entrenamiento del modelo en un hilo separado
+    para no bloquear la aplicación Flask.
+    """
     global PROCESS_RUNNING
     if request.method == "POST":
         try:
@@ -160,6 +292,10 @@ def train_route():
         return redirect(url_for("train_route"))
 
     return render_template("train.html")
+
+# ==========================================================
+# RUTA DE GENERACION DE DATASET
+# ==========================================================
 
 @app.route("/generate_dataset", methods=["GET", "POST"])
 def generate_dataset():
@@ -196,21 +332,27 @@ def generate_dataset():
 
     return render_template("generate_dataset.html")
 
+# ==========================================================
+# RUTA DE VISUALIZACIÓN DEL DATASET
+# ==========================================================
+
 @app.route("/dataset")
 def dataset_view():
     db = get_db()
     if db.Dataset.count_documents({}) == 0:
         flash("No hay dataset disponible todavía. Generalo primero.", "warning")
         return redirect(url_for("index"))
+    
+    # ======================
+    # Filtros desde la URL
+    # ======================
 
-    # Filters from query parameters
     selected_algorithm = request.args.get("algorithm", "")
     selected_numElements = request.args.get("numElements", "")
     selected_dataType = request.args.get("dataType", "")
     selected_sorted = request.args.get("sorted", "")
     selected_type = request.args.get("type", "")
 
-    # Dynamic filter
     query = {}
     if selected_algorithm: query["algorithm"] = selected_algorithm
     if selected_numElements: query["numElements"] = int(selected_numElements)
@@ -218,11 +360,13 @@ def dataset_view():
     if selected_sorted: query["sorted"] = selected_sorted.lower() in ["true", "1"]
     if selected_type: query["type"] = selected_type
 
-    # Retrieve all documents matching the filter
     docs = list(db.Dataset.find(query).sort("_id", -1))
     count = len(docs)
 
-    # Pagination
+    # ======================
+    # Paginación
+    # ======================
+
     per_page = 20
     page = int(request.args.get("page", 1))
     total_pages = (count + per_page - 1) // per_page
@@ -230,7 +374,10 @@ def dataset_view():
     end = start + per_page
     docs_paginated = docs[start:end]
 
-    # Unique values for filters
+    # ===========================
+    # Valores únicos para filtros
+    # ===========================
+
     algorithms = sorted(list(db.Dataset.distinct("algorithm")))
     numElements_list = sorted(list(db.Dataset.distinct("numElements")))
     dataTypes = sorted(list(db.Dataset.distinct("dataType")))
@@ -256,15 +403,27 @@ def dataset_view():
         total_pages=total_pages
     )
 
+# ==========================================================
+# RUTA DE VISUALIZACION DE DATOS (PREDICCION VS ACTUAL)
+# ==========================================================
 
-# API ejemplo para gráficas
 @app.route("/api/pred_vs_actual")
 def api_pred_vs_actual():
+    """
+    Endpoint API simple para devolver datos del dataset
+    y permitir visualizaciones (charts).
+    """
     db = get_db()
     docs = list(db.Dataset.find().limit(10000))
+
     for d in docs:
         d["_id"] = str(d["_id"])
+
     return jsonify(docs)
+
+# ==========================================================
+# EJECUCIÓN LOCAL
+# ==========================================================
 
 if __name__ == "__main__":
     app.run(debug=True)

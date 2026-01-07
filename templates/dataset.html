@@ -143,15 +143,17 @@
                                 <input type="hidden" name="datatype" value="{{ selected_datatype }}">
                                 <input type="hidden" name="type" value="{{ selected_type }}">
                             </form>
-
+                            
                             {% elif key == 'type' %}
                             <form method="get" class="mt-1">
+                                <!--
                                 <select name="type" onchange="this.form.submit()" class="text-center w-full bg-gray-700 text-gray-100 rounded px-1 py-0.5 text-sm">
                                     <option value="">All</option>
                                     {% for val in types %}
                                         <option value="{{ val }}" {% if val == selected_type %}selected{% endif %}>{{ val }}</option>
                                     {% endfor %}
                                 </select>
+                                -->
                                 <input type="hidden" name="algorithm" value="{{ selected_algorithm }}">
                                 <input type="hidden" name="numElements" value="{{ selected_numElements }}">
                                 <input type="hidden" name="datatype" value="{{ selected_datatype }}">
