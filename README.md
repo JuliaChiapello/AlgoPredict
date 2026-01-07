@@ -239,7 +239,7 @@ Características:
 ---
 
 ## Estructura del proyecto
-
+```
 AlgoPredict/
 app/
 algorithms.py
@@ -255,6 +255,8 @@ app.py
 dualModelTrain.pkl
 README.md
 requirements.txt
+```
+
 ---
 
 ## Cómo ejecutar
