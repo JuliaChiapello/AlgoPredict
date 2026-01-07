@@ -227,17 +227,6 @@ Características:
 - Variables de contexto limpias y explícitas  
 - Separación lógica del backend y frontend  
 
----
-
-## Próximas Mejoras
-- Gráficos con Chart.js / Plotly  
-- Exportación CSV / XLSX / JSON  
-- Dashboard interactivo  
-- Benchmark multiproceso  
-- Panel de análisis avanzado  
-
----
-
 ## Estructura del proyecto
 ```
 AlgoPredict/
@@ -287,14 +276,10 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### Próximas mejoras
-
+## Próximas Mejoras
 - Visualizaciones comparativas (real vs teórico)
 - Dashboards interactivos
 - Exportación de datasets
-- Métricas avanzadas de error
-- Comparación multi-hardware
-
 
 ## Autora
 Julia Gabriela Chiapello
