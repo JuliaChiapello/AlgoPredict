@@ -242,16 +242,17 @@ Características:
 ```
 AlgoPredict/
 app/
-algorithms.py
-model.py
+    algorithms.py
+    model.py
 templates/
-base.html
-index.html
-predict.html
-train.html
-generate_dataset.html
-dataset.html
+    base.html
+    index.html
+    predict.html
+    train.html
+    generate_dataset.html
+    dataset.html
 app.py
+.env.example
 dualModelTrain.pkl
 README.md
 requirements.txt
