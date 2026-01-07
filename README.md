@@ -190,6 +190,66 @@ según el rango de entrada.
 
 ---
 
+## Funcionalidades Implementadas
+
+### 1. Filtros dinámicos por columna
+Cada columna tiene su propio dropdown:
+- `algorithm`
+- `numElements`
+- `dataType`
+- `sorted`
+- `type` (real / theoretical)
+
+Los filtros:
+- Son independientes  
+- Persisten entre sí  
+- No rompen la paginación  
+- Se regeneran dinámicamente desde MongoDB  
+
+---
+
+### 2. Paginación profesional  
+Botones incluidos:
+- ⏮ Primero  
+- ◀️ Anterior  
+- ▶️ Siguiente  
+- ⏭ Último  
+
+Características:
+- Disponible **arriba y abajo** de la tabla  
+- Compatible con filtros  
+- URLs limpias usando GET  
+- Estilo profesional con TailwindCSS  
+
+---
+
+### 3. UI Profesional
+- Tema oscuro por defecto  
+- Tabla responsive  
+- Hover states  
+- Dropdowns centrados  
+- Transiciones suaves  
+- Layout limpio y elegante  
+
+---
+
+### 4. Código ordenado y mantenible
+- Rutas simples y claras  
+- Paginación manual optimizada  
+- Uso correcto de Jinja2  
+- Variables de contexto limpias y explícitas  
+- Separación lógica del backend y frontend  
+
+---
+
+## Próximas Mejoras
+- Gráficos con Chart.js / Plotly  
+- Exportación CSV / XLSX / JSON  
+- Dashboard interactivo  
+- Benchmark multiproceso  
+- Panel de análisis avanzado  
+
+---
 
 ## Estructura del proyecto
 
