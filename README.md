@@ -180,7 +180,7 @@ según el rango de entrada.
 ## Funcionalidades Implementadas
 
 ### 1. Filtros dinámicos para columnas
-Las siguientes columnas tiene su propio dropdown:
+Las siguientes columnas tienen su propio dropdown:
 - `algorithm`
 - `numElements`
 - `dataType`
